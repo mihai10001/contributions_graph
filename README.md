@@ -2,6 +2,8 @@
 
 This script generates a heatmap visualizing your commit contributions over time in a specified Git repository. It filters commit dates based on the author's email and displays the number of commits per week and weekday.
 
+![contribution_heatmap](https://github.com/user-attachments/assets/9bb3ba14-5599-4c07-b696-e11d36b71da7)
+
 ## Features
 
 - Extracts commit dates from a Git repository using the author's email.
