@@ -1,12 +1,13 @@
-# Git Commit Contribution Heatmap
+# Git Contribution Heatmap
 
-This script generates a heatmap visualizing your commit contributions over time in a specified Git repository. It filters commit dates based on the author's email and displays the number of commits per week and weekday.
+This script generates a heatmap visualizing your commit contributions over time in one or more Git repositories. It filters commit dates based on the author's email and displays the number of commits per week and weekday.
 
-![contribution_heatmap](https://github.com/user-attachments/assets/9bb3ba14-5599-4c07-b696-e11d36b71da7)
+![contribution_heatmap](https://github.com/user-attachments/assets/1cd0da3b-b60b-4027-9b24-b830dcdd1852)
+![contribution_heatmap](https://github.com/user-attachments/assets/001abdbb-0fcb-4e4a-8b73-01aa89dd14e5)
 
 ## Features
 
-- Extracts commit dates from a Git repository using the author's email.
+- Extracts commit dates from one or more Git repositories using the author's email.
 - Parses and organizes the commit data into a structured format.
 - Generates a heatmap visualizing the commit contributions by week and weekday.
 
@@ -32,13 +33,16 @@ pip install matplotlib seaborn pandas
 Run the script from the command line with the following syntax:
 
 ```bash
-python generate_graph.py <path_to_your_repository> <your_email@example.com>
+python generate_graph.py <path_to_your_repository1> <path_to_your_repository2> ... <your_email@example.com> [--transparent]
 ```
 
 ### Example
 
 ```bash
 python generate_graph.py /path/to/your/repo your_email@example.com
+
+# Multiple repositories and transparent
+python generate_graph.py /path/to/first/repo /path/to/second/repo your_email@example.com --transparent
 ```
 
 This will generate a heatmap image named `contribution_heatmap.png` in the current directory.
