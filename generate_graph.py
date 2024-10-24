@@ -1,14 +1,12 @@
-import subprocess
-import matplotlib.pyplot as plt
-import seaborn as sns
-import pandas as pd
-from datetime import datetime
 import sys
-
-def validate_input():
-    if len(sys.argv) < 3:
-        print("Usage: python script_name.py 'path/to/repo1' 'path/to/repo2' ... 'your_email@example.com'")
-        sys.exit(1)
+import argparse
+from datetime import datetime
+import subprocess
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import matplotlib.colors as mcolors
+import seaborn as sns
 
 def get_commit_dates(repo_paths, your_email):
     all_commit_dates = []
@@ -68,30 +66,46 @@ def get_month_labels(heatmap_data):
         previous_month = current_month
     return month_labels, month_positions
 
-def plot_heatmap(heatmap_data, month_labels, month_positions):
+def create_transparent_cmap(cmap_name, alpha=1.0):
+    base_cmap = plt.get_cmap(cmap_name)
+    colors = base_cmap(np.linspace(0, 1, base_cmap.N))
+    colors[:, -1] = np.linspace(0, alpha, base_cmap.N)
+    return mcolors.ListedColormap(colors)
+
+def plot_heatmap(heatmap_data, month_labels, month_positions, use_transparency):
+    cmap = create_transparent_cmap('Greens', alpha=0.5) if use_transparency else 'Greens'
+    linecolor = (0, 0, 0, 0.1) if use_transparency else (1, 1, 1, 1)
+    tickscolor = 'white' if use_transparency else 'black'
+
     plt.figure(figsize=(len(month_labels) + 4, 3))
     sns.heatmap(
         heatmap_data,
-        cmap="Greens",
+        cmap=cmap,
         linewidths=0.1,
-        linecolor='white',
+        linecolor=linecolor,
         cbar=False,
         square=True,
-        yticklabels=['Mon', '', 'Wed', '', 'Fri', '', 'Sun']
+        yticklabels=['Mon', '', 'Wed', '', 'Fri', '', 'Sun'],
     )
     plt.gca().xaxis.set_ticks_position('top')
-    plt.xticks(month_positions, [month_labels[pos] for pos in month_positions], rotation=0, fontsize=12)
+    plt.yticks(color=tickscolor)
+    plt.xticks(month_positions, [month_labels[pos] for pos in month_positions], rotation=0, fontsize=12, color=tickscolor)
     plt.title('')
     plt.xlabel('')
     plt.ylabel('')
     plt.gca().tick_params(axis='both', which='both', length=0)
     plt.tight_layout()
-    plt.savefig("contribution_heatmap.png")
+    plt.savefig("contribution_heatmap.png", transparent=use_transparency)
 
 def main():
-    validate_input()
-    repo_paths = sys.argv[1:-1]  # Repositories
-    your_email = sys.argv[-1]    # Email
+    parser = argparse.ArgumentParser(description='Generate a contribution heatmap from git repositories.')
+    parser.add_argument('repos', nargs='+', help='Paths to git repositories')
+    parser.add_argument('email', help='Your email address used in the git commits')
+    parser.add_argument('--transparent', action='store_true', help='Use transparency in heatmap (default: False)')
+    args = parser.parse_args()
+    repo_paths = args.repos
+    your_email = args.email
+    use_transparency = args.transparent
 
     commit_dates = get_commit_dates(repo_paths, your_email)
     parsed_dates = parse_dates(commit_dates)
@@ -99,7 +113,7 @@ def main():
     commit_counts_grouped = enrich_commit_counts(commit_counts_df)
     heatmap_data = create_heatmap_data(commit_counts_grouped)
     month_labels, month_positions = get_month_labels(heatmap_data)
-    plot_heatmap(heatmap_data, month_labels, month_positions)
+    plot_heatmap(heatmap_data, month_labels, month_positions, use_transparency)
 
 if __name__ == "__main__":
     main()
