@@ -62,12 +62,12 @@ def get_month_labels(heatmap_data):
     return month_labels, month_positions
 
 def plot_heatmap(heatmap_data, month_labels, month_positions):
-    plt.figure(figsize=(18, 6))
+    plt.figure(figsize=(18, 3))
     sns.heatmap(
-        heatmap_data, 
-        cmap="Greens", 
-        linewidths=0.1, 
-        linecolor='white', 
+        heatmap_data,
+        cmap="Greens",
+        linewidths=0.1,
+        linecolor='white',
         cbar=False,
         square=True,
         yticklabels=['Mon', '', 'Wed', '', 'Fri', '', 'Sun']
