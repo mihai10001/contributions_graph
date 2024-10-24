@@ -6,18 +6,25 @@ from datetime import datetime
 import sys
 
 def validate_input():
-    if len(sys.argv) != 3:
-        print("Usage: python script_name.py 'path/to/repo' 'your_email@example.com'")
+    if len(sys.argv) < 3:
+        print("Usage: python script_name.py 'path/to/repo1' 'path/to/repo2' ... 'your_email@example.com'")
         sys.exit(1)
 
-def get_commit_dates(repo_path, your_email):
-    git_log_cmd = [
-        "git", "-C", repo_path, "log", 
-        "--pretty=format:%ad,%ae", "--date=iso", 
-        "--author={}".format(your_email)
-    ]
-    git_log_output = subprocess.check_output(git_log_cmd).decode("utf-8")
-    return [line.split(',')[0] for line in git_log_output.splitlines()]
+def get_commit_dates(repo_paths, your_email):
+    all_commit_dates = []
+    for repo_path in repo_paths:
+        git_log_cmd = [
+            "git", "-C", repo_path, "log", 
+            "--pretty=format:%ad,%ae", "--date=iso", 
+            "--author={}".format(your_email)
+        ]
+        try:
+            git_log_output = subprocess.check_output(git_log_cmd).decode("utf-8")
+            commit_dates = [line.split(',')[0] for line in git_log_output.splitlines()]
+            all_commit_dates.extend(commit_dates)
+        except subprocess.CalledProcessError as e:
+            print(f"Error processing repository {repo_path}: {e}")
+    return all_commit_dates
 
 def parse_dates(commit_dates):
     parsed_dates = []
@@ -28,7 +35,7 @@ def parse_dates(commit_dates):
         except ValueError:
             continue
     if not parsed_dates:
-        raise ValueError("No valid commit dates found. Please check your email or repository.")
+        raise ValueError("No valid commit dates found. Please check your repositories or email.")
     return parsed_dates
 
 def create_commit_counts_df(parsed_dates):
@@ -62,7 +69,7 @@ def get_month_labels(heatmap_data):
     return month_labels, month_positions
 
 def plot_heatmap(heatmap_data, month_labels, month_positions):
-    plt.figure(figsize=(18, 3))
+    plt.figure(figsize=(len(month_labels) + 4, 3))
     sns.heatmap(
         heatmap_data,
         cmap="Greens",
@@ -83,10 +90,10 @@ def plot_heatmap(heatmap_data, month_labels, month_positions):
 
 def main():
     validate_input()
-    repo_path = sys.argv[1]
-    your_email = sys.argv[2]
+    repo_paths = sys.argv[1:-1]  # Repositories
+    your_email = sys.argv[-1]    # Email
 
-    commit_dates = get_commit_dates(repo_path, your_email)
+    commit_dates = get_commit_dates(repo_paths, your_email)
     parsed_dates = parse_dates(commit_dates)
     commit_counts_df = create_commit_counts_df(parsed_dates)
     commit_counts_grouped = enrich_commit_counts(commit_counts_df)
